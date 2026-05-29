@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Output
+papers/
+wget-log
+
+# Claude
+.claude/
+CLAUDE.local.md
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
