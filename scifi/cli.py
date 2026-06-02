@@ -3,7 +3,7 @@ import argparse
 import time
 from collections import Counter
 
-from .fetch import default_sources, fetch
+from .fetch import Manifest, default_sources, fetch
 from .sources.scihub import SciHub
 
 
@@ -24,10 +24,14 @@ def main():
         sources = [s for s in sources if not isinstance(s, SciHub)]
         sources.append(SciHub(mirrors=args.mirror))
 
+    manifest = Manifest(args.outdir)
+
     results = []
     for i, raw in enumerate(args.ids):
-        results.append(fetch(raw, outdir=args.outdir, sources=sources))
-        if i < len(args.ids) - 1:
+        result = fetch(raw, outdir=args.outdir, sources=sources, manifest=manifest)
+        results.append(result)
+        # Only sleep if we hit the network — a cached skip didn't touch any API.
+        if not result.cached and i < len(args.ids) - 1:
             time.sleep(args.delay)
 
     _print_report(results)
@@ -39,7 +43,10 @@ def _print_report(results):
     rows = []
     for r in results:
         a = r.article
-        status = f"ok → {r.path}" if r.ok else (r.error or "?")
+        if r.ok:
+            status = f"ok (cached) → {r.path}" if r.cached else f"ok → {r.path}"
+        else:
+            status = r.error or "?"
         rows.append((r.raw, a.pmid or "—", a.pmcid or "—", a.doi or "—", r.source or "—", status))
 
     widths = [max(len(h), *(len(row[i]) for row in rows)) for i, h in enumerate(headers)]
@@ -53,9 +60,12 @@ def _print_report(results):
     if len(results) > 1:
         by_source = Counter(r.source for r in results if r.ok)
         failed = sum(1 for r in results if not r.ok)
+        cached = sum(1 for r in results if r.cached)
         parts = [f"{n} {s}" for s, n in by_source.most_common()]
         if failed:
             parts.append(f"{failed} failed")
+        if cached:
+            parts.append(f"{cached} cached")
         print("─ " + " · ".join(parts) + " ─")
 
 

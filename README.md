@@ -12,6 +12,15 @@ Browse the [documentation](./docs/index.html)
 ## TODO:
 - Add sources:
   - Europe PMC
-  - arXiv, biorXiv, medrXiv
+  - arXiv, ~~biorXiv, medrXiv~~
   - OpenAlex
 - Rebuild doc on push with GitHub Actions
+
+## Usage
+
+```
+scifi 10.1006/bbrc.2000.2954
+scifi PMID:10720320
+scifi PMC1234567
+scifi 'https://pubmed.ncbi.nlm.nih.gov/10720320/'
+```
